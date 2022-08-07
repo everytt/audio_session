@@ -328,8 +328,45 @@ class AudioSession {
     return devices;
   }
 
-  static AudioDeviceType _darwinPort2type(AVAudioSessionPort port,
-      {Set<AVAudioSessionPortDescription> inputPorts = const {}}) {
+  Future<void> setMode(AudioSessionMode mode) async {
+    if (_androidAudioManager != null) {
+      AndroidAudioHardwareMode androidMode = AndroidAudioHardwareMode.invalid;
+      switch (mode) {
+        case AudioSessionMode.invalid:
+          androidMode = AndroidAudioHardwareMode.invalid;
+          break;
+        case AudioSessionMode.current:
+          androidMode = AndroidAudioHardwareMode.current;
+          break;
+        case AudioSessionMode.normal:
+          androidMode = AndroidAudioHardwareMode.normal;
+          break;
+        case AudioSessionMode.inCall:
+          androidMode = AndroidAudioHardwareMode.inCall;
+          break;
+        case AudioSessionMode.ringtone:
+          // TODO: Handle this case.
+          break;
+        case AudioSessionMode.inCommunication:
+          androidMode = AndroidAudioHardwareMode.inCommunication;
+          break;
+        case AudioSessionMode.callScreen:
+          // TODO: Handle this case.
+          break;
+      }
+      _androidAudioManager?.setMode(androidMode);
+    }
+  }
+
+  Future<bool?> isSpeakerphoneOn() async {
+    return await _androidAudioManager?.isSpeakerphoneOn();
+  }
+
+  Future<void> setSpeakerphoneOn(bool on) async {
+    return await _androidAudioManager?.setSpeakerphoneOn(on);
+  }
+
+  static AudioDeviceType _darwinPort2type(AVAudioSessionPort port, {Set<AVAudioSessionPortDescription> inputPorts = const {}}) {
     switch (port) {
       case AVAudioSessionPort.builtInMic:
         return AudioDeviceType.builtInMic;
@@ -786,3 +823,5 @@ enum AudioDeviceType {
   /// Android internal
   remoteSubmix,
 }
+
+enum AudioSessionMode { invalid, current, normal, ringtone, inCall, inCommunication, callScreen }
